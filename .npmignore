@@ -1,0 +1,6 @@
+.vscode
+.npmignore
+index.ts
+tsconfig.json
+tslint.json
+*.tgz

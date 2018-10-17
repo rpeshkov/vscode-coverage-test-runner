@@ -1,0 +1,38 @@
+{
+  "name": "vscode-coverage-test-runner",
+  "version": "1.0.0",
+  "description": "Test runner for VSCode with code coverage support",
+  "main": "index.js",
+  "scripts": {
+    "compile": "tsc -d -p ./",
+    "watch": "tsc -watch -d -p ./"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rpeshkov/vscode-coverage-test-runner.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rpeshkov/vscode-coverage-test-runner/issues"
+  },
+  "keywords": [
+    "vscode",
+    "mocha",
+    "test",
+    "istanbul"
+  ],
+  "author": "Roman Peshkov <peshkovroman@gmail.com> (https://rpeshkov.net/)",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/glob": "^7.1.1",
+    "@types/mocha": "^5.2.5",
+    "@types/node": "^10.12.0",
+    "typescript": "^3.1.3"
+  },
+  "dependencies": {
+    "decache": "^4.4.0",
+    "glob": "^7.1.3",
+    "istanbul": "^0.4.5",
+    "mocha": "^5.2.0",
+    "remap-istanbul": "^0.12.0"
+  }
+}
