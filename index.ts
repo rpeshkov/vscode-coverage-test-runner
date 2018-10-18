@@ -24,39 +24,52 @@ let mocha = new Mocha({
     useColors: true,
 });
 
-export function configure(mochaOpts: any): void {
-    mocha = new Mocha(mochaOpts);
-}
+const getVsCodeCoverageTestRunner = (config?: ITestRunnerConfiguration) => {
 
-export function run(testsRoot: string, clb: any): any {
-    // Read configuration for the coverage file
-    const coverOptions = _readCoverOptions(testsRoot);
-    if (coverOptions && coverOptions.enabled) {
-        // Setup coverage pre-test, including post-test hook to report
-        const coverageRunner = new CoverageRunner(coverOptions, testsRoot);
-        coverageRunner.setupCoverage();
+    const testPattern = (config && config.testPattern) || '**/*.test.js';
+    const configFileName =  (config && config.configFileName) || 'coverconfig.json'
+
+    function configure(mochaOpts: any): void {
+        mocha = new Mocha(mochaOpts);
     }
 
-    // Glob test files
-    glob('**/**.test.js', { cwd: testsRoot }, (error, files): any => {
-        if (error) {
-            return clb(error);
+    function run(testsRoot: string, callback: any): any {
+        // Read configuration for the coverage file
+        const coverConfigPath = paths.join(testsRoot, '..', '..', configFileName);
+        const coverOptions = _readCoverOptions(coverConfigPath);
+        if (coverOptions && coverOptions.enabled) {
+            // Setup coverage pre-test, including post-test hook to report
+            const coverageRunner = new CoverageRunner(coverOptions, testsRoot);
+            coverageRunner.setupCoverage();
         }
-        try {
-            // Fill into Mocha
-            files.forEach((f): Mocha => mocha.addFile(paths.join(testsRoot, f)));
-            // Run the tests
-            let failureCount = 0;
 
-            mocha.run()
-                .on('fail', () => failureCount++)
-                .on('end', () => clb(undefined, failureCount)
-            );
-        } catch (error) {
-            return clb(error);
-        }
-    });
+        // Glob test files
+        glob(testPattern, { cwd: testsRoot }, (error, files): any => {
+            if (error) {
+                return callback(error);
+            }
+            try {
+                // Fill into Mocha
+                files.forEach((f): Mocha => mocha.addFile(paths.join(testsRoot, f)));
+                // Run the tests
+                let failureCount = 0;
+
+                mocha.run()
+                    .on('fail', () => failureCount++)
+                    .on('end', () => callback(undefined, failureCount)
+                );
+            } catch (error) {
+                return callback(error);
+            }
+        });
+    }
+    return {configure, run}
 }
+
+const defaultTestRunner = getVsCodeCoverageTestRunner();
+export const configure = defaultTestRunner.configure;
+export const run = defaultTestRunner.run;
+export const withConfig = getVsCodeCoverageTestRunner;
 
 function _mkDirIfExists(dir: string): void {
     if (!fs.existsSync(dir)) {
@@ -64,8 +77,7 @@ function _mkDirIfExists(dir: string): void {
     }
 }
 
-function _readCoverOptions(testsRoot: string): ITestRunnerOptions | undefined {
-    const coverConfigPath = paths.join(testsRoot, '..', '..', 'coverconfig.json');
+function _readCoverOptions(coverConfigPath: string): ITestRunnerOptions | undefined {
     if (fs.existsSync(coverConfigPath)) {
         const configContent = fs.readFileSync(coverConfigPath, 'utf-8');
         return JSON.parse(configContent);
@@ -74,7 +86,10 @@ function _readCoverOptions(testsRoot: string): ITestRunnerOptions | undefined {
 }
 
 
-
+interface ITestRunnerConfiguration {
+    configFileName?: string;
+    testPattern?: string
+}
 
 interface ITestRunnerOptions {
     enabled?: boolean;

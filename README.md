@@ -40,5 +40,13 @@ Put `coverconfig.json` file into root folder of your project:
 
 Launch tests!
 
+You can also configure the test runner if needed:
+```js
+const testRunner = require('vscode-coverage-test-runner').withConfig({
+    configFileName: '.my-cover-config.json',
+    testPattern: 'test/**/*.js'
+});
+```
+
 [LICENSE]: ./LICENSE
 [license-badge]: https://img.shields.io/badge/license-MIT-blue.svg
